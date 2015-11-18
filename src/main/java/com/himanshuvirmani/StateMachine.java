@@ -1,5 +1,7 @@
 package com.himanshuvirmani;
 
+import com.himanshuvirmani.exceptions.TransitionCreationException;
+import com.himanshuvirmani.exceptions.TransitionException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -28,13 +30,23 @@ public class StateMachine<T, E, V> {
     }
 
     public void fire(E event) throws Exception {
-        if (stateTransitions == null) throw new Exception("No transitions defined for state machine");
-        if (stateTransitions.get(event) == null) throw new Exception("No transitions defined for Event " + event);
+        if (stateTransitions == null)
+            throw new TransitionException("No transitions defined for state machine");
+        if (stateTransitions.get(event) == null)
+            throw new TransitionException("No transitions defined for Event " + event);
         if (stateTransitions.get(event).get(currentState) == null)
-            throw new Exception("No transitions defined from Current State " + currentState + " for Event " + event);
+            throw new TransitionException("No transitions defined from Current State " + currentState + " for Event " + event);
 
         Transition<T, E> transition = stateTransitions.get(event).get(currentState);
+
         log.info("Event accepted with State Transition " + transition);
+
+        if (transition.getTo() == null) {
+            log.info("Transition ignored as no \"To State\" is defined for From State "
+                    + transition.getFrom() + " on " + transition.getOn());
+            return;
+        }
+
         currentState = transition.getTo();
 
         if (transition.getOnSuccessListener() != null)
@@ -50,6 +62,8 @@ public class StateMachine<T, E, V> {
 
     public void apply(Transition<T, E> tseTransition) {
 
+        validateTransition(tseTransition);
+
         if (stateTransitions == null) {
             stateTransitions = new LinkedHashMap<E, Map<T, Transition<T, E>>>();
         }
@@ -62,6 +76,11 @@ public class StateMachine<T, E, V> {
 
         transitions.put(tseTransition.getFrom(), tseTransition);
         stateTransitions.put(tseTransition.getOn(), transitions);
+    }
+
+    private void validateTransition(Transition<T, E> tseTransition) {
+        if (tseTransition.getFrom() == null) throw new TransitionCreationException("From state should be defined");
+        if (tseTransition.getOn() == null) throw new TransitionCreationException("On Event should be defined");
     }
 
     public interface StateChangeListener<T, E> {
