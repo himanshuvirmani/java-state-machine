@@ -16,10 +16,25 @@ public class Transition<T, E> {
 
     private E on;
 
+    private onSuccessListener<T, E> onSuccessListener;
+
     public Transition(TransitionBuilder<T, E> tseTransitionBuilder) {
         this.from = tseTransitionBuilder.from;
         this.to = tseTransitionBuilder.to;
         this.on = tseTransitionBuilder.on;
+        this.onSuccessListener = tseTransitionBuilder.onSuccessListener;
+    }
+
+    public void setOnSucessListener(onSuccessListener<T, E> onSucessListener){
+        this.onSuccessListener = onSucessListener;
+    }
+
+    public onSuccessListener getOnSuccessListener() {
+        return onSuccessListener;
+    }
+
+    public interface onSuccessListener<T, E> {
+        void onSuccess(T from, T to, E on);
     }
 
     public static class TransitionBuilder<U, V> {
@@ -31,6 +46,8 @@ public class Transition<T, E> {
         private U to;
 
         private V on;
+
+        private onSuccessListener<U, V> onSuccessListener;
 
         public TransitionBuilder(StateMachine stateMachine) {
             stateMachineWeakReference = new WeakReference<StateMachine>(stateMachine);
@@ -48,6 +65,11 @@ public class Transition<T, E> {
 
         public TransitionBuilder<U, V> on(V onEvent) {
             on = onEvent;
+            return this;
+        }
+
+        public TransitionBuilder<U, V> setOnSuccessListener(onSuccessListener<U, V> onSucessListener){
+            this.onSuccessListener = onSucessListener;
             return this;
         }
 
