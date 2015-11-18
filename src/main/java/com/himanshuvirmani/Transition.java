@@ -25,11 +25,11 @@ public class Transition<T, E> {
         this.onSuccessListener = tseTransitionBuilder.onSuccessListener;
     }
 
-    public void setOnSucessListener(onSuccessListener<T, E> onSucessListener){
+    public void setOnSucessListener(onSuccessListener<T, E> onSucessListener) {
         this.onSuccessListener = onSucessListener;
     }
 
-    public onSuccessListener getOnSuccessListener() {
+    public onSuccessListener<T, E> getOnSuccessListener() {
         return onSuccessListener;
     }
 
@@ -68,7 +68,7 @@ public class Transition<T, E> {
             return this;
         }
 
-        public TransitionBuilder<U, V> setOnSuccessListener(onSuccessListener<U, V> onSucessListener){
+        public TransitionBuilder<U, V> setOnSuccessListener(onSuccessListener<U, V> onSucessListener) {
             this.onSuccessListener = onSucessListener;
             return this;
         }

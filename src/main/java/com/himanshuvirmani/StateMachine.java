@@ -14,8 +14,11 @@ public class StateMachine<T, E, V> {
 
     private LinkedHashMap<E, Map<T, Transition<T, E>>> stateTransitions;
 
+    private StateChangeListener<T, E> stateChangeListener;
+
     private T currentState;
 
+    // We need the start state while initializing
     private StateMachine() {
 
     }
@@ -33,8 +36,12 @@ public class StateMachine<T, E, V> {
         Transition<T, E> transition = stateTransitions.get(event).get(currentState);
         log.info("Event accepted with State Transition " + transition);
         currentState = transition.getTo();
+
         if (transition.getOnSuccessListener() != null)
             transition.getOnSuccessListener().onSuccess(transition.getFrom(), transition.getTo(), transition.getOn());
+
+        if (stateChangeListener != null)
+            stateChangeListener.onStateChanged(transition.getFrom(), transition.getTo(), transition.getOn());
     }
 
     public Transition.TransitionBuilder<T, E> transition() {
@@ -55,6 +62,14 @@ public class StateMachine<T, E, V> {
 
         transitions.put(tseTransition.getFrom(), tseTransition);
         stateTransitions.put(tseTransition.getOn(), transitions);
+    }
+
+    public interface StateChangeListener<T, E> {
+        void onStateChanged(T from, T to, E on);
+    }
+
+    public void setStateChangeListener(StateChangeListener<T, E> stateChangeListener) {
+        this.stateChangeListener = stateChangeListener;
     }
 
 }
