@@ -1,2 +1,4 @@
 rootProject.name = 'java-state-machine'
+include 'state-machine'
+include 'sample'
 
