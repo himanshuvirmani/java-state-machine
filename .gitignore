@@ -10,3 +10,5 @@ spider.log
 *.DS_Store
 build/
 logs/
+**/.gnupg
+.gradle.properties
