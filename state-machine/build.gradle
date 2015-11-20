@@ -1,0 +1,46 @@
+group 'com.himanshuvirmani'
+version '1.0.1-SNAPSHOT'
+
+apply plugin: 'java'
+apply from: 'maven-push.gradle'
+
+repositories {
+    mavenCentral()
+}
+
+ext.slf4jVersion='1.7.5'
+dependencies {
+    compile 'org.projectlombok:lombok:1.12.2'
+//    compile 'org.slf4j:slf4j-api:' + slf4jVersion,
+//            'org.slf4j:log4j-over-slf4j:' + slf4jVersion,
+//            'org.slf4j:jul-to-slf4j:'  + slf4jVersion,
+    compile 'org.slf4j:slf4j-simple:' + slf4jVersion
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+/*task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}*/
+
+jar {
+    from {
+        (configurations.compile).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes("Main-Class": "${project.group}.Main" )
+    }
+    from files(compileJava)
+}
+
+/*
+task full_jar(type: Jar, dependsOn: classes) {
+    manifest {
+        attributes 'Main-Class': "${project.group}.Main"
+    }
+    from configurations.compile.collect {it.directory ? it : zipTree(it)}
+    from files(compileJava)
+    baseName = "${project.archivesBaseName}-full"
+}*/
