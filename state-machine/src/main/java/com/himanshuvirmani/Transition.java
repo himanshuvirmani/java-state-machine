@@ -42,7 +42,7 @@ public class Transition<T, E> {
 
     public static class TransitionBuilder<U, V> {
 
-        private WeakReference<StateMachine> stateMachineWeakReference;
+        private WeakReference<StateMachine<U, V>> stateMachineWeakReference;
 
         private U from;
 
@@ -54,8 +54,8 @@ public class Transition<T, E> {
 
         private onSuccessListener<U, V> onSuccessListener;
 
-        public TransitionBuilder(StateMachine stateMachine) {
-            stateMachineWeakReference = new WeakReference<StateMachine>(stateMachine);
+        public TransitionBuilder(StateMachine<U, V> stateMachine) {
+            stateMachineWeakReference = new WeakReference<StateMachine<U, V>>(stateMachine);
         }
 
         public TransitionBuilder<U, V> from(U fromState) {
@@ -78,14 +78,18 @@ public class Transition<T, E> {
             return this;
         }
 
-        public TransitionBuilder<U, V> setOnSuccessListener(onSuccessListener<U, V> onSucessListener) {
-            this.onSuccessListener = onSucessListener;
+        public TransitionBuilder<U, V> setOnSuccessListener(onSuccessListener<U, V> onSuccessListener) {
+            this.onSuccessListener = onSuccessListener;
             return this;
         }
 
-        public StateMachine create() {
-            stateMachineWeakReference.get().apply(new Transition<U, V>(this));
-            return stateMachineWeakReference.get();
+        public StateMachine<U, V> create() {
+            final StateMachine<U, V> stateMachine = stateMachineWeakReference.get();
+            if(stateMachine != null) {
+                stateMachine.apply(new Transition<U, V>(this));
+                return stateMachine;
+            }
+            return null;
         }
     }
 
