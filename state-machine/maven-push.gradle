@@ -76,9 +76,8 @@ afterEvaluate { project ->
         sign configurations.archives
     }
 
-    def uploadFile = file("build/libs/${project.archivesBaseName}-full-${version}.jar")
-
     artifacts {
-        archives jar
+        archives sourcesJar
+        archives javadocJar
     }
 }
