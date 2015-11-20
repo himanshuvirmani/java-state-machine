@@ -29,7 +29,7 @@ public class StateMachine<T, E, V> {
         currentState = initialState;
     }
 
-    public void fire(E event) throws Exception {
+    public void fire(E event) throws TransitionException {
         if (stateTransitions == null)
             throw new TransitionException("No transitions defined for state machine");
         if (stateTransitions.get(event) == null)

@@ -2,6 +2,7 @@ package com.himanshuvirmani.sample;
 
 import com.himanshuvirmani.StateMachine;
 import com.himanshuvirmani.Transition;
+import com.himanshuvirmani.exceptions.TransitionException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,7 +28,7 @@ public class Sample implements StateMachine.StateChangeListener<MySampleState, M
 
         try {
             stateMachine.fire(MySampleEvent.HOLD);
-        } catch (Exception e) {
+        } catch (TransitionException e) {
             e.printStackTrace();
         }
 
