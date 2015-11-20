@@ -13,8 +13,8 @@ public class Sample implements StateMachine.StateChangeListener<MySampleState, M
 
     public static void main(String[] args) {
 
-        StateMachine<MySampleState, MySampleEvent, Object> stateMachine =
-                new StateMachine<MySampleState, MySampleEvent, Object>(MySampleState.CREATED);
+        StateMachine<MySampleState, MySampleEvent> stateMachine =
+                new StateMachine<MySampleState, MySampleEvent>(MySampleState.CREATED);
 
         stateMachine.setStateChangeListener(new StateMachine.StateChangeListener<MySampleState, MySampleEvent>() {
             @Override
@@ -25,6 +25,7 @@ public class Sample implements StateMachine.StateChangeListener<MySampleState, M
 
         stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).setOnSuccessListener(onSuccessListener).create();
         stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+        stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
 
         try {
             stateMachine.fire(MySampleEvent.HOLD);

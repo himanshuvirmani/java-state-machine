@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by himanshu.virmani on 13/11/15.
  */
 @Slf4j
-public class StateMachine<T, E, V> {
+public class StateMachine<T, E> {
 
     private LinkedHashMap<E, Map<T, Transition<T, E>>> stateTransitions;
 
@@ -41,8 +41,8 @@ public class StateMachine<T, E, V> {
 
         log.info("Event accepted with State Transition " + transition);
 
-        if (transition.getTo() == null) {
-            log.info("Transition ignored as no \"To State\" is defined for From State "
+        if (transition.getTo() == null || transition.isIgnore()) {
+            log.info("Transition Ignored for From State "
                     + transition.getFrom() + " on " + transition.getOn());
             return;
         }
@@ -81,6 +81,8 @@ public class StateMachine<T, E, V> {
     private void validateTransition(Transition<T, E> tseTransition) {
         if (tseTransition.getFrom() == null) throw new TransitionCreationException("From state should be defined");
         if (tseTransition.getOn() == null) throw new TransitionCreationException("On Event should be defined");
+        if (!tseTransition.isIgnore() && tseTransition.getTo() == null)
+            throw new TransitionCreationException("A transition while its creation should either have \"ignore\" or \"To State\"");
     }
 
     public interface StateChangeListener<T, E> {

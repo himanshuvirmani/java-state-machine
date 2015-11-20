@@ -16,6 +16,8 @@ public class Transition<T, E> {
 
     private E on;
 
+    private boolean ignore;
+
     private onSuccessListener<T, E> onSuccessListener;
 
     public Transition(TransitionBuilder<T, E> tseTransitionBuilder) {
@@ -23,9 +25,10 @@ public class Transition<T, E> {
         this.to = tseTransitionBuilder.to;
         this.on = tseTransitionBuilder.on;
         this.onSuccessListener = tseTransitionBuilder.onSuccessListener;
+        this.ignore = tseTransitionBuilder.ignore;
     }
 
-    public void setOnSucessListener(onSuccessListener<T, E> onSucessListener) {
+    public void setOnSuccessListener(onSuccessListener<T, E> onSucessListener) {
         this.onSuccessListener = onSucessListener;
     }
 
@@ -47,6 +50,8 @@ public class Transition<T, E> {
 
         private V on;
 
+        private boolean ignore;
+
         private onSuccessListener<U, V> onSuccessListener;
 
         public TransitionBuilder(StateMachine stateMachine) {
@@ -65,6 +70,11 @@ public class Transition<T, E> {
 
         public TransitionBuilder<U, V> on(V onEvent) {
             on = onEvent;
+            return this;
+        }
+
+        public TransitionBuilder<U, V> ignore() {
+            ignore=  true;
             return this;
         }
 
