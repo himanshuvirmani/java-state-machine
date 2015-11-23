@@ -148,7 +148,10 @@ public class StateMachineTest {
                 .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
 
         stateMachine.fire(MySampleEvent.DELIVER);
-
         assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
+
+        stateMachine.fire(MySampleEvent.DELIVER);
+
+        assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
     }
 }
