@@ -2,6 +2,7 @@ package com.himanshuvirmani;
 
 import com.himanshuvirmani.exceptions.TransitionCreationException;
 import com.himanshuvirmani.exceptions.TransitionException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class StateMachine<T, E> {
 
     private StateChangeListener<T, E> stateChangeListener;
 
+    @Getter
     private T currentState;
 
     // We need the start state while initializing
@@ -60,6 +62,10 @@ public class StateMachine<T, E> {
         return new Transition.TransitionBuilder<T, E>(this);
     }
 
+    public Transitions.TransitionsBuilder<T, E> transitions() {
+        return new Transitions.TransitionsBuilder<T, E>(this);
+    }
+
     public void apply(Transition<T, E> tseTransition) {
 
         validateTransition(tseTransition);
@@ -78,7 +84,89 @@ public class StateMachine<T, E> {
         stateTransitions.put(tseTransition.getOn(), transitions);
     }
 
-    private void validateTransition(Transition<T, E> tseTransition) {
+    public void apply(Transitions<T, E> tseTransitions) {
+
+        validateAndApplyTransitions(tseTransitions);
+
+    }
+
+    private void validateAndApplyTransitions(Transitions<T, E> tseTransitions) throws TransitionCreationException {
+
+        if (tseTransitions.getFromAny() == null)
+            throw new TransitionCreationException("From states should be defined while creating a transition");
+        if (tseTransitions.getOnEach() == null)
+            throw new TransitionCreationException("On Events should be defined while creating a transition");
+        if (!tseTransitions.isIgnore() && tseTransitions.getToAmong() == null)
+            throw new TransitionCreationException("A transition while its creation should either have \"ignore\" or \"To States\"");
+
+        final int fromAnyLength = tseTransitions.getFromAny().length;
+        final int onEachLength = tseTransitions.getOnEach().length;
+        int toAmongLength = 0;
+
+        if (tseTransitions.getToAmong() != null) toAmongLength = tseTransitions.getToAmong().length;
+
+        if (fromAnyLength == 1) {
+            if (toAmongLength != 0 && toAmongLength != onEachLength) {
+                throw new TransitionCreationException("Number of states in \"From Any\" or \"To Among\" should be equal " +
+                        "to events provided in \"OnEach\" to avoid ambiguity");
+            }
+            for (int i = 0; i < onEachLength; i++) {
+                if (toAmongLength == 0)
+                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[0]).on(tseTransitions.getOnEach()[i]).
+                            ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+                else
+                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[0]).on(tseTransitions.getOnEach()[i]).
+                            to(tseTransitions.getToAmong()[i]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            }
+            return;
+        }
+
+        if (toAmongLength == 1) {
+            if (fromAnyLength != onEachLength) {
+                throw new TransitionCreationException("Number of states in \"From Any\" or \"To Among\" should be equal " +
+                        "to events provided in \"OnEach\" to avoid ambiguity");
+            }
+            for (int i = 0; i < onEachLength; i++) {
+                new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[i]).
+                        to(tseTransitions.getToAmong()[0]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            }
+            return;
+        }
+
+        if (onEachLength == 1) {
+            if (toAmongLength != 0 && fromAnyLength != toAmongLength) {
+                throw new TransitionCreationException("Number of states in \"From Any\" should be equal to \"To Among\" for a " +
+                        "single event to avoid ambiguity");
+            }
+            for (int i = 0; i < fromAnyLength; i++) {
+                if (toAmongLength == 0)
+                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[0]).
+                            ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+                else
+                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[0]).
+                            to(tseTransitions.getToAmong()[i]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            }
+            return;
+        }
+
+        if ((onEachLength == fromAnyLength) && (fromAnyLength == toAmongLength)) {
+            for (int i = 0; i < fromAnyLength; i++) {
+                new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[i]).
+                        to(tseTransitions.getToAmong()[i]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            }
+            return;
+        } else if ((onEachLength == fromAnyLength) && toAmongLength == 0) {
+            for (int i = 0; i < fromAnyLength; i++) {
+                new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[i]).
+                        ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            }
+            return;
+        } else {
+            throw new TransitionCreationException("Ambiguous Transitions Creation");
+        }
+    }
+
+    private void validateTransition(Transition<T, E> tseTransition) throws TransitionCreationException {
         if (tseTransition.getFrom() == null) throw new TransitionCreationException("From state should be defined");
         if (tseTransition.getOn() == null) throw new TransitionCreationException("On Event should be defined");
         if (!tseTransition.isIgnore() && tseTransition.getTo() == null)
