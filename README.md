@@ -15,7 +15,7 @@ Java State Machine is currently in a very nascent stage and has a lot improvemen
 <dependency>
     <groupId>com.himanshuvirmani</groupId>
     <artifactId>java-state-machine</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -30,7 +30,7 @@ repositories {
 
 ``` groovy
 dependencies {
-    compile 'com.himanshuvirmani:java-state-machine:1.0.0'
+    compile 'com.himanshuvirmani:java-state-machine:1.0.1'
 }
 ```
 
@@ -46,13 +46,20 @@ StateMachine<MySampleState, MySampleEvent, Object> stateMachine =
 ```
 
 ##### Creating Transitions
-
+- Individual Transition
 ``` java
 stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).setOnSuccessListener(onSuccessListener).create();
 
 stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
 ```
+- Using Single line Transitions Examples
+``` java
+stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).on(MySampleEvent.HOLD, MySampleEvent.DELIVER).create();
 
+stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+
+stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).on(MySampleEvent.DELIVER).ignore().create();
+```
 ##### Firing an event
 
 ``` java
@@ -76,7 +83,6 @@ public void onStateChanged(MySampleState from, MySampleState to, MySampleEvent o
 
 
 ## To Do
-1. Add ToAmong, OnEach for multiple transitions creation.
-2. State Exit and Entry Listeners.
-3. Better Java Docs
-4. More features as and when they come.
+1. State Exit and Entry Listeners.
+2. Better Java Docs
+3. More features as and when they come.
