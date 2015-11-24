@@ -1,5 +1,5 @@
 group 'com.himanshuvirmani'
-version '1.0.0'
+version '1.0.3'
 
 apply plugin: 'java'
 apply from: 'maven-push.gradle'
@@ -10,7 +10,7 @@ repositories {
 
 ext.slf4jVersion='1.7.5'
 dependencies {
-    compile 'org.projectlombok:lombok:1.12.2'
+    compile 'org.projectlombok:lombok:1.16.6'
 //    compile 'org.slf4j:slf4j-api:' + slf4jVersion,
 //            'org.slf4j:log4j-over-slf4j:' + slf4jVersion,
 //            'org.slf4j:jul-to-slf4j:'  + slf4jVersion,
@@ -19,7 +19,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
-jar {
+/*jar {
     from {
         (configurations.compile).collect {
             it.isDirectory() ? it : zipTree(it)
@@ -29,7 +29,7 @@ jar {
         attributes("Main-Class": "${project.group}.Main" )
     }
     from files(compileJava)
-}
+}*/
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
