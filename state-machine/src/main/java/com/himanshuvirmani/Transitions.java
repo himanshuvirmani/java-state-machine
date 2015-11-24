@@ -57,7 +57,7 @@ public class Transitions<T, E> {
             return this;
         }
 
-        public TransitionsBuilder<U, V> on(V... onEvents) {
+        public TransitionsBuilder<U, V> onEach(V... onEvents) {
             onEach = onEvents;
             return this;
         }

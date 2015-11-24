@@ -3,6 +3,7 @@ package com.himanshuvirmani;
 import com.himanshuvirmani.exceptions.TransitionCreationException;
 import com.himanshuvirmani.exceptions.TransitionException;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -20,18 +21,16 @@ public class StateMachine<T, E> {
     private StateChangeListener<T, E> stateChangeListener;
 
     @Getter
+    @Setter
     private T currentState;
-
-    // We need the start state while initializing
-    private StateMachine() {
-
-    }
 
     public StateMachine(T initialState) {
         currentState = initialState;
     }
 
     public void fire(E event) throws TransitionException {
+        if (currentState == null)
+            throw new TransitionException("current state cannot be null");
         if (stateTransitions == null)
             throw new TransitionException("No transitions defined for state machine");
         if (stateTransitions.get(event) == null)
@@ -56,6 +55,11 @@ public class StateMachine<T, E> {
 
         if (stateChangeListener != null)
             stateChangeListener.onStateChanged(transition.getFrom(), transition.getTo(), transition.getOn());
+    }
+
+    public void fire(E event, T currentState) throws TransitionException {
+        this.currentState = currentState;
+        fire(event);
     }
 
     public Transition.TransitionBuilder<T, E> transition() {

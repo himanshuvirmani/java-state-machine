@@ -93,7 +93,7 @@ public class StateMachineTest {
     public void testMultipleTransitionsInOneSuccess() {
 
         stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
-                .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).on(MySampleEvent.HOLD, MySampleEvent.DELIVER).create();
+                .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.HOLD, MySampleEvent.DELIVER).create();
 
         stateMachine.fire(MySampleEvent.HOLD);
 
@@ -103,7 +103,7 @@ public class StateMachineTest {
     @Test
     public void testMultipleIgnoreTransitionsSuccess() {
 
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).on(MySampleEvent.HOLD, MySampleEvent.DELIVER).ignore().create();
+        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.HOLD, MySampleEvent.DELIVER).ignore().create();
 
         stateMachine.fire(MySampleEvent.HOLD);
 
@@ -113,7 +113,7 @@ public class StateMachineTest {
     @Test
     public void testSingleEventMultipleFromIgnoreSuccess() {
 
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).on(MySampleEvent.DELIVER).ignore().create();
+        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.DELIVER).ignore().create();
 
         stateMachine.fire(MySampleEvent.DELIVER);
 
@@ -124,7 +124,7 @@ public class StateMachineTest {
     public void testNoIgnoreNoToFailure() {
 
         try {
-            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).on(MySampleEvent.DELIVER).create();
+            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.DELIVER).create();
             assertEquals(true, false);
         } catch (Exception e) {
             assertTrue(e instanceof TransitionCreationException);
@@ -135,7 +135,7 @@ public class StateMachineTest {
     public void testWrongFromToArgumentsFailure() {
         try {
             stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
-                    .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED, MySampleState.CANCELLED).on(MySampleEvent.DELIVER).create();
+                    .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED, MySampleState.CANCELLED).onEach(MySampleEvent.DELIVER).create();
             assertEquals(true, false);
         } catch (Exception e) {
             assertTrue(e instanceof TransitionCreationException);
@@ -145,7 +145,7 @@ public class StateMachineTest {
     @Test
     public void testSingleEventMultipleFromToArgumentsSuccess() {
         stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
-                .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+                .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
 
         stateMachine.fire(MySampleEvent.DELIVER);
         assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
