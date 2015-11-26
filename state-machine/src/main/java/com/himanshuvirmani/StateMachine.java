@@ -3,6 +3,7 @@ package com.himanshuvirmani;
 import com.himanshuvirmani.exceptions.TransitionCreationException;
 import com.himanshuvirmani.exceptions.TransitionException;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,10 +15,13 @@ import java.util.Map;
  * Created by himanshu.virmani on 13/11/15.
  */
 @Slf4j
+@NoArgsConstructor
 public class StateMachine<T, E> {
 
     private LinkedHashMap<E, Map<T, Transition<T, E>>> stateTransitions;
 
+    @Getter
+    @Setter
     private StateChangeListener<T, E> stateChangeListener;
 
     @Getter
@@ -107,9 +111,34 @@ public class StateMachine<T, E> {
         final int onEachLength = tseTransitions.getOnEach().length;
         int toAmongLength = 0;
 
-        if (tseTransitions.getToAmong() != null) toAmongLength = tseTransitions.getToAmong().length;
+        if (tseTransitions.getToAmong() != null && !tseTransitions.isIgnore())
+            toAmongLength = tseTransitions.getToAmong().length;
 
-        if (fromAnyLength == 1) {
+        if (!isAllTransitionLengthsValid(fromAnyLength, onEachLength, toAmongLength)) {
+            throw new TransitionCreationException("Ambiguous Transitions Creation. " +
+                    "State machine is not able to comprehend the transitions applied. " +
+                    "HINT: Check out lengths of from state, to state and events");
+        }
+
+        final int length = getMax(fromAnyLength, onEachLength, toAmongLength);
+
+        for (int i = 0; i < length; i++) {
+
+            T fromState = i < fromAnyLength ? tseTransitions.getFromAny()[i] : tseTransitions.getFromAny()[fromAnyLength - 1];
+
+            E onEvent = i < onEachLength ? tseTransitions.getOnEach()[i] : tseTransitions.getOnEach()[onEachLength - 1];
+
+            if (toAmongLength == 0) {
+                new Transition.TransitionBuilder<T, E>(this).from(fromState).on(onEvent).
+                        ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            } else {
+                T toState = i < toAmongLength ? tseTransitions.getToAmong()[i] : tseTransitions.getToAmong()[toAmongLength - 1];
+                new Transition.TransitionBuilder<T, E>(this).from(fromState).on(onEvent).
+                        to(toState).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
+            }
+        }
+
+/*        if (fromAnyLength == 1) {
             if (toAmongLength != 0 && toAmongLength != onEachLength) {
                 throw new TransitionCreationException("Number of states in \"From Any\" or \"To Among\" should be equal " +
                         "to events provided in \"OnEach\" to avoid ambiguity");
@@ -167,7 +196,24 @@ public class StateMachine<T, E> {
             return;
         } else {
             throw new TransitionCreationException("Ambiguous Transitions Creation");
+        }*/
+    }
+
+    private boolean isAllTransitionLengthsValid(int fromAnyLength, int onEachLength, int toAmongLength) {
+
+        if (fromAnyLength > 1) {
+            if (toAmongLength > 1 && fromAnyLength != toAmongLength) return false;
+            if (onEachLength > 1 && fromAnyLength != onEachLength) return false;
+        } else if (toAmongLength > 1) {
+            if (fromAnyLength > 1 && toAmongLength != fromAnyLength) return false;
+            if (onEachLength > 1 && toAmongLength != onEachLength) return false;
+        } else if (onEachLength > 1) {
+            if (toAmongLength > 1 && onEachLength != toAmongLength) return false;
+            if (fromAnyLength > 1 && fromAnyLength != onEachLength) return false;
         }
+
+        return true;
+
     }
 
     private void validateTransition(Transition<T, E> tseTransition) throws TransitionCreationException {
@@ -181,8 +227,11 @@ public class StateMachine<T, E> {
         void onStateChanged(T from, T to, E on);
     }
 
-    public void setStateChangeListener(StateChangeListener<T, E> stateChangeListener) {
-        this.stateChangeListener = stateChangeListener;
+    private int getMax(int fromAnyLength, int onEachLength, int toAmongLength) {
+        int max = fromAnyLength;
+        if (max < onEachLength) max = onEachLength;
+        if (max < toAmongLength) max = toAmongLength;
+        return max;
     }
 
 }

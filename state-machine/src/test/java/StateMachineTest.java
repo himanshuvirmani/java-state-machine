@@ -154,4 +154,17 @@ public class StateMachineTest {
 
         assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
     }
+
+    @Test
+    public void testSingleEventMultipleFromSingleToArgumentsSuccess() {
+        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
+                .toAmong(MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
+
+        stateMachine.fire(MySampleEvent.DELIVER);
+        assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+
+        stateMachine.fire(MySampleEvent.DELIVER, MySampleState.ONHOLD);
+
+        assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+    }
 }
