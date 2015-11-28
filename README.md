@@ -15,7 +15,7 @@ Java State Machine is currently in a very nascent stage and has a lot improvemen
 <dependency>
     <groupId>com.himanshuvirmani</groupId>
     <artifactId>java-state-machine</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -30,7 +30,10 @@ repositories {
 
 ``` groovy
 dependencies {
-    compile 'com.himanshuvirmani:java-state-machine:1.0.1'
+    compile("com.himanshuvirmani:java-state-machine:1.0.4") {
+        exclude group: 'org.projectlombok', module: 'lombok' //do this if you are already include lombok in you dependencies 
+        exclude group: 'org.slf4j', module: 'slf4j-simple' //do this if you are already include slf4j in you dependencies
+    }
 }
 ```
 
