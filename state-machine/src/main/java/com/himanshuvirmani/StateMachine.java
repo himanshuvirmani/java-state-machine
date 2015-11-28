@@ -52,6 +52,11 @@ public class StateMachine<T, E> {
             return;
         }
 
+        if (transition.getCondition() != null && !transition.getCondition().isMet()) {
+            log.info("Condition not met. Ignoring transition");
+            return;
+        }
+
         currentState = transition.getTo();
 
         if (transition.getOnSuccessListener() != null)
@@ -138,65 +143,6 @@ public class StateMachine<T, E> {
             }
         }
 
-/*        if (fromAnyLength == 1) {
-            if (toAmongLength != 0 && toAmongLength != onEachLength) {
-                throw new TransitionCreationException("Number of states in \"From Any\" or \"To Among\" should be equal " +
-                        "to events provided in \"OnEach\" to avoid ambiguity");
-            }
-            for (int i = 0; i < onEachLength; i++) {
-                if (toAmongLength == 0)
-                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[0]).on(tseTransitions.getOnEach()[i]).
-                            ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-                else
-                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[0]).on(tseTransitions.getOnEach()[i]).
-                            to(tseTransitions.getToAmong()[i]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-            }
-            return;
-        }
-
-        if (toAmongLength == 1) {
-            if (fromAnyLength != onEachLength) {
-                throw new TransitionCreationException("Number of states in \"From Any\" or \"To Among\" should be equal " +
-                        "to events provided in \"OnEach\" to avoid ambiguity");
-            }
-            for (int i = 0; i < onEachLength; i++) {
-                new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[i]).
-                        to(tseTransitions.getToAmong()[0]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-            }
-            return;
-        }
-
-        if (onEachLength == 1) {
-            if (toAmongLength != 0 && fromAnyLength != toAmongLength) {
-                throw new TransitionCreationException("Number of states in \"From Any\" should be equal to \"To Among\" for a " +
-                        "single event to avoid ambiguity");
-            }
-            for (int i = 0; i < fromAnyLength; i++) {
-                if (toAmongLength == 0)
-                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[0]).
-                            ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-                else
-                    new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[0]).
-                            to(tseTransitions.getToAmong()[i]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-            }
-            return;
-        }
-
-        if ((onEachLength == fromAnyLength) && (fromAnyLength == toAmongLength)) {
-            for (int i = 0; i < fromAnyLength; i++) {
-                new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[i]).
-                        to(tseTransitions.getToAmong()[i]).setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-            }
-            return;
-        } else if ((onEachLength == fromAnyLength) && toAmongLength == 0) {
-            for (int i = 0; i < fromAnyLength; i++) {
-                new Transition.TransitionBuilder<T, E>(this).from(tseTransitions.getFromAny()[i]).on(tseTransitions.getOnEach()[i]).
-                        ignore().setOnSuccessListener(tseTransitions.getOnSuccessListener()).create();
-            }
-            return;
-        } else {
-            throw new TransitionCreationException("Ambiguous Transitions Creation");
-        }*/
     }
 
     private boolean isAllTransitionLengthsValid(int fromAnyLength, int onEachLength, int toAmongLength) {
@@ -212,7 +158,7 @@ public class StateMachine<T, E> {
             if (fromAnyLength > 1 && fromAnyLength != onEachLength) return false;
         }
 
-        return true;
+        return !(fromAnyLength == 1 && onEachLength == 1 && toAmongLength != 1);
 
     }
 

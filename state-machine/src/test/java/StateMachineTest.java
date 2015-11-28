@@ -1,5 +1,6 @@
 import TestUtil.MySampleEvent;
 import TestUtil.MySampleState;
+import com.himanshuvirmani.Condition;
 import com.himanshuvirmani.StateMachine;
 import com.himanshuvirmani.Transition;
 import com.himanshuvirmani.exceptions.TransitionCreationException;
@@ -143,6 +144,17 @@ public class StateMachineTest {
     }
 
     @Test
+    public void testWrongFromToOnArgumentsFailure() {
+        try {
+            stateMachine.transitions().fromAny(MySampleState.CREATED)
+                    .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
+            assertEquals(true, false);
+        } catch (Exception e) {
+            assertTrue(e instanceof TransitionCreationException);
+        }
+    }
+
+    @Test
     public void testSingleEventMultipleFromToArgumentsSuccess() {
         stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
                 .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
@@ -167,4 +179,39 @@ public class StateMachineTest {
 
         assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
     }
+
+
+    @Test
+    public void testSingleConditionalTransitionSuccess() {
+        final int a = 2;
+        final int b = 2;
+        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
+            @Override
+            public boolean isMet() {
+                return a==b;
+            }
+        }).create();
+        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+
+        stateMachine.fire(MySampleEvent.HOLD);
+        assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
+    }
+
+    @Test
+    public void testSingleConditionNotMetTransition() {
+        final int a = 2;
+        final int b = 3;
+        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
+            @Override
+            public boolean isMet() {
+                return a==b;
+            }
+        }).create();
+        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+
+        stateMachine.fire(MySampleEvent.HOLD);
+        assertEquals(stateMachine.getCurrentState(), MySampleState.CREATED);
+    }
+
+
 }
