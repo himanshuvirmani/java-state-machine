@@ -15,7 +15,7 @@ Java State Machine is currently in a very nascent stage and has a lot improvemen
 <dependency>
     <groupId>com.himanshuvirmani</groupId>
     <artifactId>java-state-machine</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
@@ -30,7 +30,7 @@ repositories {
 
 ``` groovy
 dependencies {
-    compile("com.himanshuvirmani:java-state-machine:1.0.4") {
+    compile("com.himanshuvirmani:java-state-machine:1.0.5") {
         exclude group: 'org.projectlombok', module: 'lombok' //do this if you are already include lombok in you dependencies 
         exclude group: 'org.slf4j', module: 'slf4j-simple' //do this if you are already include slf4j in you dependencies
     }
@@ -63,6 +63,16 @@ stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).
 
 stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).on(MySampleEvent.DELIVER).ignore().create();
 ```
+- Using Conditional Transitions Example. You can catch TransitionConditionNotMetException to ignore state change when condition is not met.
+``` java
+stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
+    @Override
+    public boolean isMet() {
+        return a == b;
+    }
+}).create();
+```
+
 ##### Firing an event
 
 ``` java
