@@ -3,6 +3,7 @@ import TestUtil.MySampleState;
 import com.himanshuvirmani.Condition;
 import com.himanshuvirmani.StateMachine;
 import com.himanshuvirmani.Transition;
+import com.himanshuvirmani.exceptions.TransitionConditionNotMetException;
 import com.himanshuvirmani.exceptions.TransitionCreationException;
 import com.himanshuvirmani.exceptions.TransitionException;
 import org.junit.Before;
@@ -37,18 +38,26 @@ public class StateMachineTest {
             }
         });
 
-        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).setOnSuccessListener(new Transition.onSuccessListener<MySampleState, MySampleEvent>() {
-            @Override
-            public void onSuccess(MySampleState from, MySampleState to, MySampleEvent on) {
-                assertTrue(from == MySampleState.CREATED);
-                assertTrue(to == MySampleState.ONHOLD);
-                assertTrue(on == MySampleEvent.HOLD);
-            }
-        }).create();
-        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
-        stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
+        try {
+            stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).setOnSuccessListener(new Transition.onSuccessListener<MySampleState, MySampleEvent>() {
+                @Override
+                public void onSuccess(MySampleState from, MySampleState to, MySampleEvent on) {
+                    assertTrue(from == MySampleState.CREATED);
+                    assertTrue(to == MySampleState.ONHOLD);
+                    assertTrue(on == MySampleEvent.HOLD);
+                }
+            }).create();
+            stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+            stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.HOLD);
+        try {
+            stateMachine.fire(MySampleEvent.HOLD);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -56,18 +65,19 @@ public class StateMachineTest {
     @Test
     public void testTransitionExceptionCase() {
 
-        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).setOnSuccessListener(new Transition.onSuccessListener<MySampleState, MySampleEvent>() {
-            @Override
-            public void onSuccess(MySampleState from, MySampleState to, MySampleEvent on) {
+        try {
+            stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).create();
+            stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+            stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-            }
-        }).create();
-        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
-        stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
 
         try {
             stateMachine.fire(MySampleEvent.DELIVER);
         } catch (TransitionException e) {
+            assertEquals(false, e instanceof TransitionConditionNotMetException);
             assertEquals(stateMachine.getCurrentState(), MySampleState.CREATED);
         }
     }
@@ -75,28 +85,39 @@ public class StateMachineTest {
     @Test
     public void testIgnoreCase() {
 
-        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).setOnSuccessListener(new Transition.onSuccessListener<MySampleState, MySampleEvent>() {
-            @Override
-            public void onSuccess(MySampleState from, MySampleState to, MySampleEvent on) {
+        try {
+            stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).create();
+            stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+            stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-            }
-        }).create();
-        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
-        stateMachine.transition().from(MySampleState.DELIVERED).on(MySampleEvent.CANCEL).ignore().create();
-
-        stateMachine.fire(MySampleEvent.HOLD);
-        stateMachine.fire(MySampleEvent.DELIVER);
-        stateMachine.fire(MySampleEvent.CANCEL);
+        try {
+            stateMachine.fire(MySampleEvent.HOLD);
+            stateMachine.fire(MySampleEvent.DELIVER);
+            stateMachine.fire(MySampleEvent.CANCEL);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
         assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
     }
 
     @Test
     public void testMultipleTransitionsInOneSuccess() {
 
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
-                .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.HOLD, MySampleEvent.DELIVER).create();
+        try {
+            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
+                    .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.HOLD, MySampleEvent.DELIVER).create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.HOLD);
+        try {
+            stateMachine.fire(MySampleEvent.HOLD);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
 
         assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
     }
@@ -104,9 +125,17 @@ public class StateMachineTest {
     @Test
     public void testMultipleIgnoreTransitionsSuccess() {
 
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.HOLD, MySampleEvent.DELIVER).ignore().create();
+        try {
+            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.HOLD, MySampleEvent.DELIVER).ignore().create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.HOLD);
+        try {
+            stateMachine.fire(MySampleEvent.HOLD);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
 
         assertEquals(stateMachine.getCurrentState(), MySampleState.CREATED);
     }
@@ -114,9 +143,17 @@ public class StateMachineTest {
     @Test
     public void testSingleEventMultipleFromIgnoreSuccess() {
 
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.DELIVER).ignore().create();
+        try {
+            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD).onEach(MySampleEvent.DELIVER).ignore().create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.DELIVER);
+        try {
+            stateMachine.fire(MySampleEvent.DELIVER);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
 
         assertEquals(stateMachine.getCurrentState(), MySampleState.CREATED);
     }
@@ -156,28 +193,46 @@ public class StateMachineTest {
 
     @Test
     public void testSingleEventMultipleFromToArgumentsSuccess() {
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
-                .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
+        try {
+            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
+                    .toAmong(MySampleState.ONHOLD, MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.DELIVER);
-        assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
+        try {
+            stateMachine.fire(MySampleEvent.DELIVER);
+            assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
 
-        stateMachine.fire(MySampleEvent.DELIVER);
+            stateMachine.fire(MySampleEvent.DELIVER);
 
-        assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+            assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test
     public void testSingleEventMultipleFromSingleToArgumentsSuccess() {
-        stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
-                .toAmong(MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
+        try {
+            stateMachine.transitions().fromAny(MySampleState.CREATED, MySampleState.ONHOLD)
+                    .toAmong(MySampleState.DELIVERED).onEach(MySampleEvent.DELIVER).create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.DELIVER);
-        assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+        try {
+            stateMachine.fire(MySampleEvent.DELIVER);
+            assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
 
-        stateMachine.fire(MySampleEvent.DELIVER, MySampleState.ONHOLD);
+            stateMachine.fire(MySampleEvent.DELIVER, MySampleState.ONHOLD);
 
-        assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+            assertEquals(stateMachine.getCurrentState(), MySampleState.DELIVERED);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -185,15 +240,27 @@ public class StateMachineTest {
     public void testSingleConditionalTransitionSuccess() {
         final int a = 2;
         final int b = 2;
-        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
-            @Override
-            public boolean isMet() {
-                return a==b;
-            }
-        }).create();
-        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+        try {
+            stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
+                @Override
+                public boolean isMet() {
+                    return a == b;
+                }
+            }).create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
+        try {
+            stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.HOLD);
+        try {
+            stateMachine.fire(MySampleEvent.HOLD);
+        } catch (TransitionException e) {
+            e.printStackTrace();
+        }
         assertEquals(stateMachine.getCurrentState(), MySampleState.ONHOLD);
     }
 
@@ -201,15 +268,24 @@ public class StateMachineTest {
     public void testSingleConditionNotMetTransition() {
         final int a = 2;
         final int b = 3;
-        stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
-            @Override
-            public boolean isMet() {
-                return a==b;
-            }
-        }).create();
-        stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+        try {
+            stateMachine.transition().from(MySampleState.CREATED).to(MySampleState.ONHOLD).on(MySampleEvent.HOLD).when(new Condition() {
+                @Override
+                public boolean isMet() {
+                    return a == b;
+                }
+            }).create();
+            stateMachine.transition().from(MySampleState.ONHOLD).to(MySampleState.DELIVERED).on(MySampleEvent.DELIVER).create();
+        } catch (TransitionCreationException e) {
+            e.printStackTrace();
+        }
 
-        stateMachine.fire(MySampleEvent.HOLD);
+
+        try {
+            stateMachine.fire(MySampleEvent.HOLD);
+        } catch (TransitionException e) {
+            assertEquals(true, e instanceof TransitionConditionNotMetException);
+        }
         assertEquals(stateMachine.getCurrentState(), MySampleState.CREATED);
     }
 

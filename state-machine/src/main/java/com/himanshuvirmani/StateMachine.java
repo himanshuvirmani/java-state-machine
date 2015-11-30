@@ -1,5 +1,6 @@
 package com.himanshuvirmani;
 
+import com.himanshuvirmani.exceptions.TransitionConditionNotMetException;
 import com.himanshuvirmani.exceptions.TransitionCreationException;
 import com.himanshuvirmani.exceptions.TransitionException;
 import lombok.Getter;
@@ -53,8 +54,8 @@ public class StateMachine<T, E> {
         }
 
         if (transition.getCondition() != null && !transition.getCondition().isMet()) {
-            log.info("Condition not met. Ignoring transition");
-            return;
+            log.error("Event accepted - Transition Condition Not Met " + transition);
+            throw new TransitionConditionNotMetException("No transitions defined from Current State " + currentState + " for Event " + event);
         }
 
         currentState = transition.getTo();
@@ -79,7 +80,7 @@ public class StateMachine<T, E> {
         return new Transitions.TransitionsBuilder<T, E>(this);
     }
 
-    public void apply(Transition<T, E> tseTransition) {
+    public void apply(Transition<T, E> tseTransition) throws TransitionCreationException {
 
         validateTransition(tseTransition);
 
@@ -97,7 +98,7 @@ public class StateMachine<T, E> {
         stateTransitions.put(tseTransition.getOn(), transitions);
     }
 
-    public void apply(Transitions<T, E> tseTransitions) {
+    public void apply(Transitions<T, E> tseTransitions) throws TransitionCreationException {
 
         validateAndApplyTransitions(tseTransitions);
 

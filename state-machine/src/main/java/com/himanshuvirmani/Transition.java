@@ -1,5 +1,6 @@
 package com.himanshuvirmani;
 
+import com.himanshuvirmani.exceptions.TransitionCreationException;
 import lombok.Data;
 
 import java.lang.ref.WeakReference;
@@ -85,7 +86,7 @@ public class Transition<T, E> {
             return this;
         }
 
-        public StateMachine<U, V> create() {
+        public StateMachine<U, V> create() throws TransitionCreationException {
             final StateMachine<U, V> stateMachine = stateMachineWeakReference.get();
             if(stateMachine != null) {
                 stateMachine.apply(new Transition<U, V>(this));
